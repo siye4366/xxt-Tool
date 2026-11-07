@@ -9,19 +9,28 @@ import androidx.recyclerview.widget.RecyclerView
 class TaskAdapter(
     private val onClick: (Task) -> Unit,
     private val onLongClick: (Task) -> Unit,
-) : RecyclerView.Adapter<TaskAdapter.VH>() {
+    private val onAddClick: (() -> Unit)? = null,
+) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     private val items = ArrayList<Task>()
     private var mode = 0
     private var greenDays = 5
     private var orangeDays = 1
+    private var showAdd = false
 
-    fun submit(list: List<Task>, mode: Int, greenDays: Int = 5, orangeDays: Int = 1) {
+    fun submit(
+        list: List<Task>,
+        mode: Int,
+        greenDays: Int = 5,
+        orangeDays: Int = 1,
+        showAdd: Boolean = false,
+    ) {
         items.clear()
         items.addAll(list)
         this.mode = mode
         this.greenDays = greenDays
         this.orangeDays = orangeDays
+        this.showAdd = showAdd
         notifyDataSetChanged()
     }
 
@@ -32,27 +41,42 @@ class TaskAdapter(
         val badge: TextView = v.findViewById(R.id.tvBadge)
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
-        val v = LayoutInflater.from(parent.context).inflate(R.layout.item_task, parent, false)
-        return VH(v)
+    class AddVH(v: View) : RecyclerView.ViewHolder(v)
+
+    override fun getItemViewType(position: Int): Int =
+        if (showAdd && position == items.size) 1 else 0
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+        val inflater = LayoutInflater.from(parent.context)
+        return if (viewType == 1) {
+            AddVH(inflater.inflate(R.layout.item_add_task, parent, false))
+        } else {
+            VH(inflater.inflate(R.layout.item_task, parent, false))
+        }
     }
 
-    override fun getItemCount(): Int = items.size
+    override fun getItemCount(): Int = items.size + if (showAdd) 1 else 0
 
-    override fun onBindViewHolder(holder: VH, position: Int) {
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+        if (holder is AddVH) {
+            holder.itemView.setOnClickListener { onAddClick?.invoke() }
+            return
+        }
         val t = items[position]
+        val vh = holder as VH
+        val tag = t.source.ifEmpty { t.provider.label }
         val now = System.currentTimeMillis()
-        holder.title.text = t.title
-        holder.badge.text = t.type.label
+        vh.title.text = t.title
+        vh.badge.text = t.type.label
 
         val course = t.courseName.ifEmpty { "未知课程" }
         when (mode) {
             0 -> {
                 val r = TimeFmt.remain(now, t.endTime, greenDays, orangeDays)
-                holder.right.text = r.text
-                holder.right.setTextColor(r.color)
-                val tag = t.provider.label
-                holder.sub.text = if (t.endTime > 0) {
+                vh.right.text = r.text
+                vh.right.setTextColor(r.color)
+                // tag 已按来源计算
+                vh.sub.text = if (t.endTime > 0) {
                     "$tag · $course · 截止 " + TimeFmt.dateTime(t.endTime)
                 } else {
                     "$tag · $course · 截止时间未知"
@@ -60,54 +84,54 @@ class TaskAdapter(
             }
 
             1 -> {
-                holder.right.text = "待批阅"
-                holder.right.setTextColor(TimeFmt.C_SOON)
+                vh.right.text = "待批阅"
+                vh.right.setTextColor(TimeFmt.C_SOON)
                 val days = TimeFmt.daysAgo(now, t.stageTime)
-                holder.sub.text = when {
-                    t.statusText.startsWith("已提交") -> "${t.provider.label} · $course · 已提交（时间未知）"
-                    days > 0 -> "${t.provider.label} · $course · 已交 $days 天"
-                    days == 0 -> "${t.provider.label} · $course · 今天交的"
-                    else -> "${t.provider.label} · $course"
+                vh.sub.text = when {
+                    t.statusText.startsWith("已提交") -> "$tag · $course · 已提交（时间未知）"
+                    days > 0 -> "$tag · $course · 已交 $days 天"
+                    days == 0 -> "$tag · $course · 今天交的"
+                    else -> "$tag · $course"
                 }
             }
 
             2 -> {
                 if (t.status == TaskStatus.SUBMITTED) {
                     // 待批阅超过 x 天被移进来的：老师一直没批
-                    holder.right.text = "超期未批"
-                    holder.right.setTextColor(TimeFmt.C_SOON)
+                    vh.right.text = "超期未批"
+                    vh.right.setTextColor(TimeFmt.C_SOON)
                     val days = TimeFmt.daysAgo(now, t.stageTime)
-                    holder.sub.text = if (days >= 0) {
-                        "${t.provider.label} · $course · 已交 $days 天"
+                    vh.sub.text = if (days >= 0) {
+                        "$tag · $course · 已交 $days 天"
                     } else {
-                        "${t.provider.label} · $course"
+                        "$tag · $course"
                     }
                 } else {
                     val g = t.grade
-                    holder.right.text = if (g.isNotEmpty()) "$g 分" else "已完成"
-                    holder.right.setTextColor(TimeFmt.C_TEXT)
+                    vh.right.text = if (g.isNotEmpty()) "$g 分" else "已完成"
+                    vh.right.setTextColor(TimeFmt.C_TEXT)
                     val d = TimeFmt.dateTime(if (t.stageTime > 0) t.stageTime else t.publishTime)
-                    holder.sub.text = "${t.provider.label} · $course · $d"
+                    vh.sub.text = "$tag · $course · $d"
                 }
             }
 
             else -> {
                 if (t.endTime > 0) {
                     val r = TimeFmt.remain(now, t.endTime, greenDays, orangeDays)
-                    holder.right.text = r.text
-                    holder.right.setTextColor(r.color)
-                    holder.sub.text = "${t.provider.label} · $course · 截止 " + TimeFmt.dateTime(t.endTime)
+                    vh.right.text = r.text
+                    vh.right.setTextColor(r.color)
+                    vh.sub.text = "$tag · $course · 截止 " + TimeFmt.dateTime(t.endTime)
                 } else {
-                    holder.right.text = "已过期"
-                    holder.right.setTextColor(TimeFmt.C_EXPIRED)
-                    holder.sub.text = "${t.provider.label} · $course · " +
+                    vh.right.text = "已过期"
+                    vh.right.setTextColor(TimeFmt.C_EXPIRED)
+                    vh.sub.text = "$tag · $course · " +
                         if (t.type == TaskType.EXAM) "已过期未考" else "已过期未交"
                 }
             }
         }
 
-        holder.itemView.setOnClickListener { onClick(t) }
-        holder.itemView.setOnLongClickListener {
+        vh.itemView.setOnClickListener { onClick(t) }
+        vh.itemView.setOnLongClickListener {
             onLongClick(t)
             true
         }

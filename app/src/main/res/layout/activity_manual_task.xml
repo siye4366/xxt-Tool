@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/tt_bg"
+    android:fitsSystemWindows="true"
+    android:orientation="vertical">
+
+    <LinearLayout style="@style/TtTopBar">
+        <ImageButton
+            android:id="@+id/btnBack"
+            android:layout_width="34dp"
+            android:layout_height="34dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="返回"
+            android:padding="5dp"
+            android:scaleType="centerInside"
+            android:src="@drawable/ic_back"
+            android:tint="@color/tt_ink" />
+
+        <TextView
+            style="@style/TtTitle"
+            android:layout_marginStart="6dp"
+            android:text="手动添加" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="1" />
+
+        <TextView
+            android:id="@+id/btnSave"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:gravity="center"
+            android:paddingLeft="12dp"
+            android:paddingRight="4dp"
+            android:text="保存"
+            android:textColor="@color/tt_accent"
+            android:textSize="13sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:overScrollMode="never"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingLeft="18dp"
+            android:paddingTop="4dp"
+            android:paddingRight="18dp"
+            android:paddingBottom="40dp">
+
+            <TextView style="@style/TtLabel" android:text="作业 / 考试名称" />
+
+            <EditText
+                android:id="@+id/etTitle"
+                style="@style/TtField"
+                android:hint="例如：第三章课后作业"
+                android:textColorHint="@color/tt_muted2" />
+
+            <TextView style="@style/TtLabel" android:text="所属课程（可选）" />
+
+            <EditText
+                android:id="@+id/etCourse"
+                style="@style/TtField"
+                android:hint="例如：高等数学"
+                android:textColorHint="@color/tt_muted2" />
+
+            <TextView style="@style/TtLabel" android:text="类型" />
+
+            <RadioGroup
+                android:id="@+id/rgType"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:orientation="horizontal">
+
+                <RadioButton
+                    android:id="@+id/rbWork"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:buttonTint="@color/tt_accent"
+                    android:checked="true"
+                    android:text="作业"
+                    android:textColor="@color/tt_ink"
+                    android:textSize="14sp" />
+
+                <RadioButton
+                    android:id="@+id/rbExam"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:buttonTint="@color/tt_accent"
+                    android:text="考试"
+                    android:textColor="@color/tt_ink"
+                    android:textSize="14sp" />
+            </RadioGroup>
+
+            <TextView style="@style/TtLabel" android:text="发布时间" />
+
+            <TextView
+                android:id="@+id/tvPublish"
+                style="@style/TtField"
+                android:gravity="center_vertical"
+                android:textColor="@color/tt_ink"
+                android:textSize="14sp" />
+
+            <TextView style="@style/TtLabel" android:text="截止时间" />
+
+            <TextView
+                android:id="@+id/tvDeadline"
+                style="@style/TtField"
+                android:gravity="center_vertical"
+                android:textColor="@color/tt_ink"
+                android:textSize="14sp" />
+
+            <TextView style="@style/TtLabel" android:text="到期后" />
+
+            <Spinner
+                android:id="@+id/spExpiry"
+                android:layout_width="match_parent"
+                android:layout_height="46dp"
+                android:layout_marginTop="6dp"
+                android:background="@drawable/bg_field"
+                android:paddingLeft="12dp"
+                android:paddingRight="12dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:text="手动任务只保存在本机；到期后按上面的选择处理。"
+                android:textColor="@color/tt_muted2"
+                android:textSize="11sp" />
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

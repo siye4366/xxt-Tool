@@ -71,6 +71,11 @@ class Prefs(ctx: Context) {
         get() = s(K_YT_CACHE)
         set(v) = putS(K_YT_CACHE, v)
 
+    /** 手动添加的作业/考试（独立于账号，退出登录不清） */
+    var manualTasks: String
+        get() = s(K_MANUAL)
+        set(v) = putS(K_MANUAL, v)
+
     /** 当前数据源对应的任务缓存 */
     var activeCache: String
         get() = if (provider == Provider.YUKETANG) ytCache else cache
@@ -270,6 +275,7 @@ class Prefs(ctx: Context) {
         private const val K_SYNC = "last_sync"
         private const val K_UPDATE_CHECK = "last_update_check"
         private const val K_CACHE = "cache"
+        private const val K_MANUAL = "manual_tasks"
         private const val K_DELETED = "deleted"
         private const val K_STATE = "states"
         private const val K_UNIQ = "unique_id"

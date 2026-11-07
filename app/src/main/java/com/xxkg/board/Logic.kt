@@ -195,6 +195,20 @@ object Categorizer {
 
         for (t in all) {
             if (t.key in deleted) continue
+            // 手动任务如果刚好在本次会话期间到期，也按用户选择处理
+            if (t.manual && t.status == TaskStatus.TODO && t.endTime > 0L && t.endTime < now) {
+                when (t.expiryAction) {
+                    ManualExpiry.DONE -> {
+                        done.add(t)
+                        continue
+                    }
+                    ManualExpiry.EXPIRED -> {
+                        expired.add(t)
+                        continue
+                    }
+                    ManualExpiry.DELETE -> continue
+                }
+            }
             when (t.status) {
                 TaskStatus.EXPIRED -> expired.add(t)
 

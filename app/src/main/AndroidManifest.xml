@@ -35,6 +35,12 @@
             android:exported="false"
             android:theme="@style/Theme.Board.Timetable" />
 
+        <activity
+            android:name=".ManualTaskEditActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Board.Timetable"
+            android:windowSoftInputMode="adjustResize" />
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"

@@ -13,8 +13,8 @@ android {
         applicationId = "com.xxkg.board"
         minSdk = 24
         targetSdk = 34
-        versionCode = 20800
-        versionName = "2.8.0"
+        versionCode = 20801
+        versionName = "2.8.1"
     }
 
     // 签名信息放在仓库外的 keystore.properties（已 gitignore）；

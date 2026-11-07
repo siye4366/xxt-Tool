@@ -15,6 +15,11 @@ enum class TaskType {
  */
 enum class TaskStatus { TODO, EXPIRED, SUBMITTED, GRADED }
 
+/** 手动添加的任务到期后怎么处理。 */
+enum class ManualExpiry {
+    DONE, EXPIRED, DELETE;
+}
+
 /** 统一后的任务条目（作业或考试）。 */
 class Task(
     var key: String = "",
@@ -35,6 +40,10 @@ class Task(
     var statusText: String = "",
     /** 数据源：学习通 / 雨课堂，用于合并展示和标记 */
     var provider: Provider = Provider.CHAOXING,
+    /** 手动添加：来源文案由用户填写，默认“手动添加” */
+    var manual: Boolean = false,
+    var source: String = "",
+    var expiryAction: ManualExpiry = ManualExpiry.DONE,
 ) {
     fun toJson(): JSONObject {
         val o = JSONObject()
@@ -53,6 +62,9 @@ class Task(
         o.put("u", url)
         o.put("sx", statusText)
         o.put("p", provider.name)
+        o.put("man", manual)
+        o.put("src", source)
+        o.put("ea", expiryAction.name)
         return o
     }
 
@@ -74,6 +86,10 @@ class Task(
             statusText = o.optString("sx"),
             provider = runCatching { Provider.valueOf(o.optString("p")) }
                 .getOrDefault(Provider.CHAOXING),
+            manual = o.optBoolean("man", false),
+            source = o.optString("src"),
+            expiryAction = runCatching { ManualExpiry.valueOf(o.optString("ea")) }
+                .getOrDefault(ManualExpiry.DONE),
         )
 
         fun encode(list: List<Task>): String {

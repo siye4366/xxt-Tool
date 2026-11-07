@@ -71,7 +71,8 @@ class MainActivity : AppCompatActivity() {
 
         adapter = TaskAdapter(
             onClick = { t -> openTask(t) },
-            onLongClick = { t -> confirmDelete(t) }
+            onLongClick = { t -> confirmDelete(t) },
+            onAddClick = { addManualTask() }
         )
         list.layoutManager = LinearLayoutManager(this)
         list.adapter = adapter
@@ -101,7 +102,7 @@ class MainActivity : AppCompatActivity() {
             showRangeDialog()
         }
 
-        swipe.setOnRefreshListener { refresh() }
+        swipe.setOnRefreshListener { refresh(showSuccessToast = true) }
 
         BottomNav.bind(this, PageNav.HOMEWORK) {
             tab = 0
@@ -155,6 +156,9 @@ class MainActivity : AppCompatActivity() {
         } else if (requestCode == REQ_TASK) {
             // 从学习通页面回到列表：这条作业可能刚交过，轻量刷新它的状态
             refreshTaskStatus(lastOpenedTaskKey)
+        } else if (requestCode == REQ_MANUAL) {
+            all = loadCached()
+            render()
         }
     }
 
@@ -193,26 +197,12 @@ class MainActivity : AppCompatActivity() {
                 "无截止"
             }
             tvCountdown.setTextColor(r.color)
-            val soon = buckets.todo.count { it.endTime > now && it.endTime - now <= TimeFmt.DAY }
-            val week = buckets.todo.count { it.endTime > now && it.endTime - now <= 7 * TimeFmt.DAY }
-            val course = first.courseName.ifEmpty { "" }
-            tvNearestMeta.text = buildString {
-                append(first.provider.label)
-                append(" · ")
-                if (course.isNotEmpty()) {
-                    append(course)
-                    append(" · ")
-                }
-                append("截止 ")
-                append(if (first.endTime > 0) TimeFmt.dateTime(first.endTime) else "未知")
-                if (soon > 0) {
-                    append(" · 今天 ")
-                    append(soon)
-                }
-                if (week > soon) {
-                    append(" · 本周 ")
-                    append(week)
-                }
+            val course = first.courseName.ifEmpty { "未知课程" }
+            val tag = first.source.ifEmpty { first.provider.label }
+            tvNearestMeta.text = if (first.endTime > 0) {
+                "$tag · $course · 截止 " + TimeFmt.dateTime(first.endTime)
+            } else {
+                "$tag · $course · 截止时间未知"
             }
         }
 
@@ -222,7 +212,7 @@ class MainActivity : AppCompatActivity() {
             2 -> buckets.done
             else -> buckets.expired
         }
-        adapter.submit(data, tab, prefs.greenDays, prefs.orangeDays)
+        adapter.submit(data, tab, prefs.greenDays, prefs.orangeDays, showAdd = tab == 0)
 
         if (data.isEmpty()) {
             emptyBox.visibility = android.view.View.VISIBLE
@@ -246,12 +236,14 @@ class MainActivity : AppCompatActivity() {
 
     // ------------------------------------------------------------ 刷新
 
-    private fun loadCached(): List<Task> =
-        Task.decode(prefs.cache) + Task.decode(prefs.ytCache).onEach {
+    private fun loadCached(): List<Task> {
+        val online = Task.decode(prefs.cache) + Task.decode(prefs.ytCache).onEach {
             it.provider = Provider.YUKETANG
         }
+        return ManualTasks.merge(prefs, online, doneDays = prefs.yDays)
+    }
 
-    private fun refresh() {
+    private fun refresh(showSuccessToast: Boolean = false) {
         if (refreshing) return
         val cxOn = prefs.isCxLoggedIn
         val ytOn = prefs.isYtLoggedIn
@@ -290,12 +282,19 @@ class MainActivity : AppCompatActivity() {
                         if (firstError.isEmpty()) firstError = e.message ?: "雨课堂刷新失败"
                     }
                 }
-                all = merged
+                all = ManualTasks.merge(prefs, merged, doneDays = prefs.yDays)
                 prefs.lastSync = System.currentTimeMillis()
                 if (merged.isEmpty() && firstError.isNotEmpty()) {
                     toast("抓取失败：$firstError")
                 }
                 render()
+                if (showSuccessToast) {
+                    if (firstError.isEmpty()) {
+                        toast("刷新成功")
+                    } else if (merged.isNotEmpty()) {
+                        toast("刷新完成，部分失败")
+                    }
+                }
             } catch (e: Exception) {
                 toast("刷新失败：" + (e.message ?: "未知错误"))
             } finally {
@@ -308,6 +307,10 @@ class MainActivity : AppCompatActivity() {
     // ------------------------------------------------------------ 交互
 
     private fun openTask(t: Task) {
+        if (t.manual) {
+            editManualTask(t.key)
+            return
+        }
         if (t.url.isEmpty()) {
             toast("这条没有可打开的页面")
             return
@@ -320,6 +323,16 @@ class MainActivity : AppCompatActivity() {
         i.putExtra(WebActivity.EXTRA_TITLE, t.title)
         i.putExtra(WebActivity.EXTRA_PROVIDER, t.provider.name)
         startActivityForResult(i, REQ_TASK)
+    }
+
+    private fun addManualTask() {
+        startActivityForResult(Intent(this, ManualTaskEditActivity::class.java), REQ_MANUAL)
+    }
+
+    private fun editManualTask(key: String) {
+        val i = Intent(this, ManualTaskEditActivity::class.java)
+        i.putExtra(ManualTaskEditActivity.EXTRA_KEY, key)
+        startActivityForResult(i, REQ_MANUAL)
     }
 
     private fun refererFor(t: Task): String =
@@ -349,9 +362,9 @@ class MainActivity : AppCompatActivity() {
                 if (index >= 0) list[index] = updated
                 all = list
                 if (updated.provider == Provider.YUKETANG) {
-                    prefs.ytCache = Task.encode(all.filter { it.provider == Provider.YUKETANG })
+                    prefs.ytCache = Task.encode(all.filter { it.provider == Provider.YUKETANG && !it.manual })
                 } else {
-                    prefs.cache = Task.encode(all.filter { it.provider == Provider.CHAOXING })
+                    prefs.cache = Task.encode(all.filter { it.provider == Provider.CHAOXING && !it.manual })
                 }
                 render()
             } catch (e: Exception) {
@@ -366,9 +379,14 @@ class MainActivity : AppCompatActivity() {
             .setMessage(t.title)
             .setNegativeButton("取消", null)
             .setPositiveButton("移除") { _, _ ->
-                prefs.deleteKey(t.key)
+                if (t.manual) {
+                    ManualTasks.remove(prefs, t.key)
+                    all = loadCached()
+                } else {
+                    prefs.deleteKey(t.key)
+                }
                 render()
-                toast("已移除，可在「个人」里恢复")
+                toast(if (t.manual) "已删除手动任务" else "已移除，可在「个人」里恢复")
             }
             .show()
     }
@@ -400,5 +418,6 @@ class MainActivity : AppCompatActivity() {
     companion object {
         private const val REQ_LOGIN = 1001
         private const val REQ_TASK = 1002
+        private const val REQ_MANUAL = 1003
     }
 }

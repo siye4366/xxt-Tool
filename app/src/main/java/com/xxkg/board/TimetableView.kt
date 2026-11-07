@@ -223,21 +223,6 @@ class TimetableView @JvmOverloads constructor(
             canvas.drawText(p.end, leftW / 2f, cy + 15f * density, smallPaint)
         }
 
-        // 当前时间线画在课程卡下面，避免红线穿过课程文字
-        if (TimetableLogic.weekNumber(d.term, today) == week) {
-            val now = TimetableLogic.nowMinutes()
-            val p = TimetableLogic.currentPeriod(periods, now)
-            if (p != null) {
-                val i = periods.indexOfFirst { it.no == p.no }
-                val progress = TimetableLogic.progressInPeriod(p, now)
-                if (i >= 0 && progress >= 0f) {
-                    val y = (i + progress) * rowH
-                    canvas.drawLine(leftW, y, w, y, nowPaint)
-                    canvas.drawCircle(leftW, y, 3.2f * density, nowPaint)
-                }
-            }
-        }
-
         hits.clear()
         val activeSlots = HashSet<String>()
         for (s in d.segments) {
@@ -259,7 +244,51 @@ class TimetableView @JvmOverloads constructor(
             drawCard(canvas, s, course, active, colW)
         }
 
+        val currentWeek = TimetableLogic.weekNumber(d.term, today) == week
+        if (currentWeek) {
+            val todayCol = TimetableLogic.dayOfWeek(today)
+            // 时间线画在所有课程之上；随后再把今天的课程重画一遍，盖住时间线
+            drawNowLine(canvas, w, h, periods)
+            for (s in d.segments) {
+                if (s.hidden || !s.weeks.contains(week) || s.day != todayCol) continue
+                val course = d.course(s.courseId) ?: continue
+                drawCard(canvas, s, course, active = true, colW = colW, recordHit = false)
+            }
+        }
+
         drawPendingCell(canvas, colW)
+    }
+
+    /** 当前时间线：永远显示，课程外时按时间放在顶部/底部或节次边界。 */
+    private fun drawNowLine(canvas: Canvas, w: Float, h: Float, periods: List<Period>) {
+        if (periods.isEmpty()) return
+        val now = TimetableLogic.nowMinutes()
+        val firstStart = TimetableLogic.minutesOfDay(periods.first().start)
+        val lastEnd = TimetableLogic.minutesOfDay(periods.last().end)
+        val y = when {
+            firstStart < 0 || now < firstStart -> 0f
+            lastEnd < 0 || now > lastEnd -> h
+            else -> {
+                val p = TimetableLogic.currentPeriod(periods, now)
+                if (p != null) {
+                    val i = periods.indexOfFirst { it.no == p.no }
+                    val progress = TimetableLogic.progressInPeriod(p, now).coerceIn(0f, 1f)
+                    (i + progress) * rowH
+                } else {
+                    var boundary = h
+                    for (i in periods.indices) {
+                        val start = TimetableLogic.minutesOfDay(periods[i].start)
+                        if (start >= 0 && now < start) {
+                            boundary = i * rowH
+                            break
+                        }
+                    }
+                    boundary
+                }
+            }
+        }.coerceIn(0f, h)
+        canvas.drawLine(leftW, y, w, y, nowPaint)
+        canvas.drawCircle(leftW, y, 3.2f * density, nowPaint)
     }
 
     private fun drawPendingCell(canvas: Canvas, colW: Float) {
@@ -292,6 +321,7 @@ class TimetableView @JvmOverloads constructor(
         course: TtCourse,
         active: Boolean,
         colW: Float,
+        recordHit: Boolean = true,
     ) {
         val left = leftW + (s.day - 1) * colW + 2f * density
         val right = leftW + s.day * colW - 2f * density
@@ -300,9 +330,17 @@ class TimetableView @JvmOverloads constructor(
         if (right <= left || bottom <= top) return
 
         val rect = RectF(left, top, right, bottom)
-        cardPaint.color = if (active) Palette.SURFACE_ALT else Palette.NONCURRENT_BG
+        val d = data ?: return
+        val isToday = active &&
+            TimetableLogic.weekNumber(d.term, today) == week &&
+            s.day == TimetableLogic.dayOfWeek(today)
+        cardPaint.color = when {
+            isToday -> accent
+            active -> Palette.SURFACE_ALT
+            else -> Palette.NONCURRENT_BG
+        }
         canvas.drawRoundRect(rect, 10f * density, 10f * density, cardPaint)
-        borderPaint.color = if (active) Palette.CARD_BORDER else 0xFFDED7C8.toInt()
+        borderPaint.color = if (isToday) accent else if (active) Palette.CARD_BORDER else 0xFFDED7C8.toInt()
         canvas.drawRoundRect(rect, 10f * density, 10f * density, borderPaint)
 
         canvas.save()
@@ -329,9 +367,21 @@ class TimetableView @JvmOverloads constructor(
         }
 
         val textW = (rect.width() - 8f * density).toInt().coerceAtLeast(8)
-        titlePaint.color = if (active) Palette.INK else Palette.NONCURRENT_INK
-        locPaint.color = if (active) Palette.MUTED else Palette.NONCURRENT_INK
-        teacherPaint.color = if (active) Palette.MUTED2 else Palette.NONCURRENT_INK
+        titlePaint.color = when {
+            isToday -> Color.WHITE
+            active -> Palette.INK
+            else -> Palette.NONCURRENT_INK
+        }
+        locPaint.color = when {
+            isToday -> 0xE6FFFFFF.toInt()
+            active -> Palette.MUTED
+            else -> Palette.NONCURRENT_INK
+        }
+        teacherPaint.color = when {
+            isToday -> 0xCCFFFFFF.toInt()
+            active -> Palette.MUTED2
+            else -> Palette.NONCURRENT_INK
+        }
 
         val available = (rect.bottom - textY - 3f * density)
         val titleLineH = titlePaint.fontSpacing * 1.05f
@@ -362,7 +412,7 @@ class TimetableView @JvmOverloads constructor(
         }
 
         canvas.restore()
-        hits.add(Hit(rect, course.id))
+        if (recordHit) hits.add(Hit(rect, course.id))
     }
 
     private fun drawLayout(
