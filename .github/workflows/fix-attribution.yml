@@ -1,0 +1,36 @@
+name: Restore collaborator release attribution
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  restore:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Recreate releases with collaborator token
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          set -e
+          login=$(gh api user -q .login)
+          echo "release token user: $login"
+          if [ "$login" != "Zailin-Eva" ]; then
+            echo "GH_PAT is not the collaborator token; refusing."
+            exit 1
+          fi
+          for tag in v2.0.0 v2.1.0 v2.2.1 v2.2.2 v2.3.0 v2.4.0 v2.5.1 v2.6.0 v2.7.0 v2.7.1 v2.7.2; do
+            echo "== $tag =="
+            body="/tmp/$tag-body.md"
+            gh release view "$tag" --json body -q .body > "$body"
+            case "$tag" in
+              v2.0.0) asset=dist/chaoxing-board-v2.0.0.apk ;;
+              v2.1.0) asset=dist/chaoxing-board-v2.1.0.apk ;;
+              *) asset="dist/xxtT-$tag.apk" ;;
+            esac
+            gh release delete "$tag" --yes
+            gh release create "$tag" "$asset" --title "$tag" --notes-file "$body"
+          done
