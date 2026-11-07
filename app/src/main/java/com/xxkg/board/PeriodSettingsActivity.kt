@@ -32,6 +32,8 @@ class PeriodSettingsActivity : AppCompatActivity() {
             renderRows()
         }
         findViewById<View>(R.id.btnGenerate).setOnClickListener { showGenerateDialog() }
+        findViewById<View>(R.id.btnAddPeriod).setOnClickListener { addPeriod() }
+        findViewById<View>(R.id.btnRemovePeriod).setOnClickListener { removeLastPeriod() }
         renderRows()
     }
 
@@ -62,30 +64,68 @@ class PeriodSettingsActivity : AppCompatActivity() {
         }
     }
 
-    private fun save() {
+    private fun collectRows(): Boolean {
         for (row in rows) {
             val a = TimetableLogic.minutesOfDay(row.start.text.toString().trim())
             val b = TimetableLogic.minutesOfDay(row.end.text.toString().trim())
             if (a < 0 || b < 0) {
                 toast("第${row.period.no}节的时间格式应为 HH:mm")
-                return
+                return false
             }
             if (b <= a) {
                 toast("第${row.period.no}节的结束时间必须晚于开始时间")
-                return
+                return false
             }
+            row.period.start = row.start.text.toString().trim()
+            row.period.end = row.end.text.toString().trim()
         }
-        data = TimetableStore.load(this)
-        for (row in rows) {
-            val target = data.periods.firstOrNull { it.no == row.period.no } ?: continue
-            target.start = row.start.text.toString().trim()
-            target.end = row.end.text.toString().trim()
-        }
+        return true
+    }
+
+    private fun save() {
+        if (!collectRows()) return
         if (!TimetableStore.save(this, data)) {
             toast("保存失败")
             return
         }
         finish()
+    }
+
+    private fun addPeriod() {
+        if (!collectRows()) return
+        val last = data.periods.lastOrNull()
+        val lastEnd = TimetableLogic.minutesOfDay(last?.end ?: "08:45")
+        val start = if (lastEnd >= 0) lastEnd + 10 else 8 * 60
+        val section = when {
+            start >= 18 * 60 -> Section.EVENING
+            start >= 14 * 60 -> Section.AFTERNOON
+            start >= 12 * 60 -> Section.NOON
+            else -> last?.section ?: Section.MORNING
+        }
+        data.periods.add(
+            Period(
+                no = data.periods.size + 1,
+                start = fmt(start),
+                end = fmt(start + 45),
+                section = section,
+            )
+        )
+        renderRows()
+    }
+
+    private fun removeLastPeriod() {
+        if (data.periods.size <= 1) {
+            toast("至少保留一节")
+            return
+        }
+        if (!collectRows()) return
+        val lastNo = data.periods.last().no
+        if (data.segments.any { it.startPeriod <= lastNo && it.endPeriod >= lastNo }) {
+            toast("有课程用到第${lastNo}节，请先调整课程")
+            return
+        }
+        data.periods.removeAt(data.periods.size - 1)
+        renderRows()
     }
 
     private fun showGenerateDialog() {

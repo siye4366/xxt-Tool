@@ -4,6 +4,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
         android:allowBackup="false"
@@ -29,6 +30,11 @@
             android:name=".LoginActivity"
             android:exported="false"
             android:configChanges="orientation|screenSize|keyboardHidden" />
+
+        <activity
+            android:name=".NotificationSettingsActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Board.Timetable" />
 
         <activity
             android:name=".SettingsActivity"

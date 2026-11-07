@@ -46,6 +46,8 @@ class TimetableView @JvmOverloads constructor(
     private val hits = ArrayList<Hit>()
 
     var onCourseClick: ((String) -> Unit)? = null
+    var onCourseLongClick: ((String) -> Unit)? = null
+    private var longPressHandled = false
     var onWeekSwipe: ((Int) -> Unit)? = null
     var onEmptyCellClick: ((Int, Int) -> Unit)? = null
 
@@ -103,9 +105,13 @@ class TimetableView @JvmOverloads constructor(
     private val touchSlop = ViewConfiguration.get(context).scaledTouchSlop
 
     private val gesture = GestureDetector(context, object : GestureDetector.SimpleOnGestureListener() {
-        override fun onDown(e: MotionEvent): Boolean = true
+        override fun onDown(e: MotionEvent): Boolean {
+            longPressHandled = false
+            return true
+        }
 
         override fun onSingleTapUp(e: MotionEvent): Boolean {
+            if (longPressHandled) return true
             val hit = hits.lastOrNull { it.rect.contains(e.x, e.y) }
             if (hit != null) {
                 onCourseClick?.invoke(hit.courseId)
@@ -120,6 +126,12 @@ class TimetableView @JvmOverloads constructor(
             if (day !in 1..7 || period !in 1..d.periods.size) return false
             onEmptyCellClick?.invoke(day, period)
             return true
+        }
+
+        override fun onLongPress(e: MotionEvent) {
+            val hit = hits.lastOrNull { it.rect.contains(e.x, e.y) } ?: return
+            longPressHandled = true
+            onCourseLongClick?.invoke(hit.courseId)
         }
 
         override fun onFling(e1: MotionEvent?, e2: MotionEvent, velocityX: Float, velocityY: Float): Boolean {

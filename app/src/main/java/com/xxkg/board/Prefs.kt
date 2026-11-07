@@ -71,6 +71,45 @@ class Prefs(ctx: Context) {
         get() = s(K_YT_CACHE)
         set(v) = putS(K_YT_CACHE, v)
 
+    /** 消息提醒总开关，默认关闭 */
+    var notifyEnabled: Boolean
+        get() = sp.getBoolean(K_NOTIFY, false)
+        set(v) = sp.edit().putBoolean(K_NOTIFY, v).apply()
+
+    /** 作业提醒：截止前多少小时，逗号分隔，默认空 */
+    var homeworkOffsets: String
+        get() = s(K_HW_OFFSETS, "")
+        set(v) = putS(K_HW_OFFSETS, v)
+
+    /** 课程提醒：上课前多少分钟，默认 30 */
+    var courseMinutes: Int
+        get() = i(K_COURSE_MIN, 30)
+        set(v) = putI(K_COURSE_MIN, v)
+
+    /** 课程提醒忽略课间 */
+    var ignoreBreak: Boolean
+        get() = sp.getBoolean(K_IGNORE_BREAK, false)
+        set(v) = sp.edit().putBoolean(K_IGNORE_BREAK, v).apply()
+
+    /** 是否使用常驻通知 */
+    var persistentNotification: Boolean
+        get() = sp.getBoolean(K_PERSISTENT, false)
+        set(v) = sp.edit().putBoolean(K_PERSISTENT, v).apply()
+
+    fun notifiedKeys(): MutableSet<String> =
+        HashSet(sp.getStringSet(K_NOTIFIED, emptySet()) ?: emptySet())
+
+    fun markNotified(key: String) {
+        val set = notifiedKeys()
+        set.add(key)
+        val trimmed = if (set.size > 600) set.toList().takeLast(600).toSet() else set
+        sp.edit().putStringSet(K_NOTIFIED, trimmed).apply()
+    }
+
+    fun clearNotified() {
+        sp.edit().remove(K_NOTIFIED).apply()
+    }
+
     /** 手动添加的作业/考试（独立于账号，退出登录不清） */
     var manualTasks: String
         get() = s(K_MANUAL)
@@ -276,6 +315,12 @@ class Prefs(ctx: Context) {
         private const val K_UPDATE_CHECK = "last_update_check"
         private const val K_CACHE = "cache"
         private const val K_MANUAL = "manual_tasks"
+        private const val K_NOTIFY = "notify_enabled"
+        private const val K_HW_OFFSETS = "notify_hw_offsets"
+        private const val K_COURSE_MIN = "notify_course_minutes"
+        private const val K_IGNORE_BREAK = "notify_ignore_break"
+        private const val K_PERSISTENT = "notify_persistent"
+        private const val K_NOTIFIED = "notified_keys"
         private const val K_DELETED = "deleted"
         private const val K_STATE = "states"
         private const val K_UNIQ = "unique_id"

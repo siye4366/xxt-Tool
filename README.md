@@ -10,7 +10,7 @@
 - 纯本地运行，登录态只存在本机（Android Keystore 加密）
 - 安装包命名统一为 `xxtT-v版本号.apk`；GitHub Release 标题统一为 `v版本号`
 
-当前版本：**2.8.1**（versionCode 20801），版本规则见 [VERSIONING.md](VERSIONING.md)。
+当前版本：**3.0.0**（versionCode 30000），版本规则见 [VERSIONING.md](VERSIONING.md)。
 
 ## 功能
 
@@ -33,6 +33,8 @@
 - 启动每天检查一次 GitHub 更新；「个人 → 检查更新」可手动检查，弹窗选择「立即更新 / 以后再说 / 打开网页」
 - 下载完成后校验包名、versionCode 和签名，再交给系统安装器覆盖安装（安装完成后手动打开 App）
 - 下拉刷新；下拉刷新成功后提示「刷新成功」
+- 「个人 → 消息设置」可开启作业/课程提醒（默认关闭）：作业按截止前 1h/12h/24h 等多个时间提醒，课程按上课前分钟数提醒，可设置忽略课间；支持常驻通知，左栏显示最近截止作业，右栏显示下节课地点；设置页底部可发送消息预览
+- 消息提醒开启后，前台每 60 秒检查一次；后台由 WorkManager 约每 15 分钟兜底检查一次
 - 「个人 → 抓取日志」可查看每一步请求结果，一键复制，方便排查接口变动
 - 支持学习通 / 雨课堂双账号同时登录，任务合并到同一套四栏，条目和顶部卡片都标注「学习通 / 雨课堂」；「个人」页可分别登录、分别退出，底部「退出登录」同时退出两个账号
 - 底部「作业 / 课表 / 个人」三页；底栏固定，只让上方内容左右滑动切换
@@ -67,7 +69,7 @@
 - **MINOR**：新增用户可见功能，清零 PATCH；
 - **PATCH**：只修 Bug/文案/样式。
 
-`versionCode = MAJOR × 10000 + MINOR × 100 + PATCH`；当前 2.8.1 = 20801。每次交付至少 +1 PATCH。完整规则和发布流程见 [VERSIONING.md](VERSIONING.md)，每个版本的改动见 [CHANGELOG.md](CHANGELOG.md)。
+`versionCode = MAJOR × 10000 + MINOR × 100 + PATCH`；当前 3.0.0 = 30000。每次交付至少 +1 PATCH。完整规则和发布流程见 [VERSIONING.md](VERSIONING.md)，每个版本的改动见 [CHANGELOG.md](CHANGELOG.md)。
 
 ## 原理
 
@@ -115,10 +117,10 @@
 
 两种方式：
 
-1. **正式 2.8.1 包**：**[`dist/xxtT-v2.8.1.apk`](dist/xxtT-v2.8.1.apk)**（release 签名，与 2.1.x–2.8.0 同一把 key）。可直接覆盖 2.8.0 安装，登录/缓存保留。
-2. **开发调试包**：本地运行 `scripts/build.ps1` 生成 `app/build/outputs/apk/debug/app-debug.apk`（版本名 `2.8.1-debug`，debug 签名）。debug 与正式包签名不同，**不能覆盖正式包**；测试请用模拟器或先卸载。
+1. **正式 3.0.0 包**：**[`dist/xxtT-v3.0.0.apk`](dist/xxtT-v3.0.0.apk)**（release 签名，与 2.1.x–3.0.0 同一把 key）。可直接覆盖 2.8.1 安装，登录/缓存保留。
+2. **开发调试包**：本地运行 `scripts/build.ps1` 生成 `app/build/outputs/apk/debug/app-debug.apk`（版本名 `3.0.0-debug`，debug 签名）。debug 与正式包签名不同，**不能覆盖正式包**；测试请用模拟器或先卸载。
 
-> 安装包命名规范：`xxtT-v版本号.apk`（例如 `xxtT-v2.8.1.apk`）。正式发布包用 `scripts/release.ps1` 生成；`keystore.properties` 与 `signing/*.jks` 不入库。
+> 安装包命名规范：`xxtT-v版本号.apk`（例如 `xxtT-v3.0.0.apk`）。正式发布包用 `scripts/release.ps1` 生成；`keystore.properties` 与 `signing/*.jks` 不入库。
 
 传到手机安装（需允许「安装未知来源应用」）。
 

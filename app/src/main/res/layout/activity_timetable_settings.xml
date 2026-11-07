@@ -193,7 +193,7 @@
                     android:layout_marginBottom="6dp"
                     android:background="@color/tt_line" />
 
-                <Switch
+                <androidx.appcompat.widget.SwitchCompat
                     android:id="@+id/swNonCurrent"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -201,8 +201,7 @@
                     android:text="显示非本周灰色课程"
                     android:textColor="@color/tt_ink"
                     android:textSize="13sp"
-                    android:thumbTint="@color/tt_accent"
-                    android:trackTint="#E5E0D5" />
+                    android:buttonTint="@color/tt_accent" />
             </LinearLayout>
 
             <!-- 数据 -->
@@ -259,6 +258,21 @@
                     android:textColor="@color/tt_ink"
                     android:textSize="13sp" />
 
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="@color/tt_line" />
+
+                <TextView
+                    android:id="@+id/btnClearTimetable"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:gravity="center_vertical"
+                    android:text="清空课表"
+                    android:textColor="@color/tt_danger"
+                    android:textSize="13sp"
+ />
+
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -267,16 +281,6 @@
                     android:textColor="@color/tt_muted2"
                     android:textSize="9.5sp" />
             </LinearLayout>
-
-            <TextView
-                android:id="@+id/tvVersion"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="18dp"
-                android:gravity="center"
-                android:text=""
-                android:textColor="@color/tt_muted2"
-                android:textSize="9.5sp" />
-        </LinearLayout>
+</LinearLayout>
     </ScrollView>
 </LinearLayout>

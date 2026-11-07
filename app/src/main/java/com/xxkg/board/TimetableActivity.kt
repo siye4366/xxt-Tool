@@ -79,6 +79,7 @@ class TimetableActivity : AppCompatActivity() {
             clearPending()
             showCourseDetail(courseId)
         }
+        grid.onCourseLongClick = { courseId -> confirmDeleteCourse(courseId) }
         grid.onEmptyCellClick = { day, period -> onEmptyCellTap(day, period) }
         grid.onWeekSwipe = { delta -> changeWeek(delta) }
         tvUnplaced.setOnClickListener { showUnplaced() }
@@ -101,6 +102,27 @@ class TimetableActivity : AppCompatActivity() {
         week = week.coerceIn(1, data.term.totalWeeks.coerceAtLeast(1))
         clearPending()
         render()
+        ReminderEngine.refreshPersistent(this)
+    }
+
+    private fun confirmDeleteCourse(courseId: String) {
+        val course = data.course(courseId) ?: return
+        AlertDialog.Builder(this)
+            .setTitle("删除课程")
+            .setMessage("会删除「${course.name}」及其全部时间段，确定吗？")
+            .setNegativeButton("取消", null)
+            .setPositiveButton("删除") { _, _ ->
+                data.courses.removeAll { it.id == courseId }
+                data.segments.removeAll { it.courseId == courseId }
+                data.unscheduled.removeAll { it.name == course.name }
+                TimetableStore.save(this, data)
+                detail?.dismiss()
+                detail = null
+                render()
+                ReminderEngine.refreshPersistent(this)
+                toast("课程已删除")
+            }
+            .show()
     }
 
     private fun onEmptyCellTap(day: Int, period: Int) {

@@ -5,10 +5,10 @@ import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.view.View
 import android.widget.LinearLayout
-import android.widget.Switch
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.widget.SwitchCompat
 import androidx.appcompat.app.AppCompatActivity
 
 /** 课表设置：学期、节次、强调色、非本周开关、JSON 备份。 */
@@ -19,8 +19,7 @@ class TimetableSettingsActivity : AppCompatActivity() {
     private lateinit var accentRow: LinearLayout
     private lateinit var tvTerm: TextView
     private lateinit var tvPeriods: TextView
-    private lateinit var tvVersion: TextView
-    private lateinit var swNonCurrent: Switch
+    private lateinit var swNonCurrent: SwitchCompat
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,7 +33,6 @@ class TimetableSettingsActivity : AppCompatActivity() {
         accentRow = findViewById(R.id.accentRow)
         tvTerm = findViewById(R.id.tvTermSummary)
         tvPeriods = findViewById(R.id.tvPeriodSummary)
-        tvVersion = findViewById(R.id.tvVersion)
         swNonCurrent = findViewById(R.id.swNonCurrent)
 
         findViewById<View>(R.id.btnBack).setOnClickListener { finish() }
@@ -50,6 +48,7 @@ class TimetableSettingsActivity : AppCompatActivity() {
         }
         findViewById<View>(R.id.btnExport).setOnClickListener { exportJson() }
         findViewById<View>(R.id.btnImport).setOnClickListener { importJson() }
+        findViewById<View>(R.id.btnClearTimetable).setOnClickListener { confirmClearTimetable() }
 
         swNonCurrent.isChecked = prefs.showNonCurrentWeek
         swNonCurrent.setOnCheckedChangeListener { _, checked ->
@@ -63,6 +62,7 @@ class TimetableSettingsActivity : AppCompatActivity() {
         super.onResume()
         data = TimetableStore.load(this)
         refresh()
+        ReminderEngine.refreshPersistent(this)
     }
 
     private fun refresh() {
@@ -72,7 +72,6 @@ class TimetableSettingsActivity : AppCompatActivity() {
         findViewById<TextView>(R.id.btnCourses).text = "课程管理（${data.courses.size} 门）"
         swNonCurrent.isChecked = prefs.showNonCurrentWeek
         renderAccents()
-        tvVersion.text = "xxtT v" + versionName() + " · 课程表"
     }
 
     private fun renderAccents() {
@@ -104,7 +103,26 @@ class TimetableSettingsActivity : AppCompatActivity() {
         }
     }
 
+    private fun confirmClearTimetable() {
+        AlertDialog.Builder(this)
+            .setTitle("清空课表")
+            .setMessage("会删除所有课程、时间段和未排课记录，保留学期与节次设置。确定吗？")
+            .setNegativeButton("取消", null)
+            .setPositiveButton("清空") { _, _ ->
+                data = TimetableStore.load(this)
+                data.courses.clear()
+                data.segments.clear()
+                data.unscheduled.clear()
+                TimetableStore.save(this, data)
+                refresh()
+                ReminderEngine.refreshPersistent(this)
+                toast("课表已清空")
+            }
+            .show()
+    }
+
     private fun showCourseManager() {
+
         data = TimetableStore.load(this)
         if (data.courses.isEmpty()) {
             toast("还没有课程，回课表点右上角 + 添加")

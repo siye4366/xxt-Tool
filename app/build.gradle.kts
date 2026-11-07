@@ -13,8 +13,8 @@ android {
         applicationId = "com.xxkg.board"
         minSdk = 24
         targetSdk = 34
-        versionCode = 20801
-        versionName = "2.8.1"
+        versionCode = 30000
+        versionName = "3.0.0"
     }
 
     // 签名信息放在仓库外的 keystore.properties（已 gitignore）；
@@ -79,6 +79,7 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("org.jsoup:jsoup:1.17.2")
     implementation("com.tom-roush:pdfbox-android:2.0.27.0")
+    implementation("androidx.work:work-runtime-ktx:2.9.0")
 
     testImplementation("junit:junit:4.13.2")
     // Android 的 org.json 在本地单元测试里是 stub，测试时用真实实现

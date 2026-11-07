@@ -60,7 +60,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="默认 13 节。可以逐节改开始/结束时间，也可以按“每节时长 + 课间”批量生成；改完保存即可。"
+                android:text="可逐节改时间，也可增删节次或按“每节时长 + 课间”批量生成；改完保存即可。"
                 android:textColor="@color/tt_muted"
                 android:textSize="10.5sp"
                 android:lineSpacingExtra="3dp" />
@@ -71,6 +71,29 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="14dp"
                 android:orientation="vertical" />
+
+            <TextView
+                android:id="@+id/btnAddPeriod"
+                android:layout_width="match_parent"
+                android:layout_height="42dp"
+                android:layout_marginTop="18dp"
+                android:background="@drawable/bg_pill"
+                android:gravity="center"
+                android:text="＋ 添加一节"
+                android:textColor="@color/tt_accent"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/btnRemovePeriod"
+                android:layout_width="match_parent"
+                android:layout_height="42dp"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/bg_pill"
+                android:gravity="center"
+                android:text="－ 减少一节"
+                android:textColor="@color/tt_danger"
+                android:textSize="12sp" />
 
             <TextView
                 android:id="@+id/btnGenerate"

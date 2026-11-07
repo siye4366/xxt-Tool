@@ -13,6 +13,9 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
@@ -42,6 +45,7 @@ class MainActivity : AppCompatActivity() {
     private var tab = 0
     private var refreshing = false
     private var lastOpenedTaskKey = ""
+    private var reminderJob: Job? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -138,6 +142,25 @@ class MainActivity : AppCompatActivity() {
         }
         if (prefs.anyLoggedIn) {
             UpdateManager.maybeAutoCheck(this)
+        }
+        ReminderScheduler.sync(this)
+        startReminderTicker()
+    }
+
+    override fun onPause() {
+        reminderJob?.cancel()
+        reminderJob = null
+        super.onPause()
+    }
+
+    private fun startReminderTicker() {
+        reminderJob?.cancel()
+        if (!prefs.notifyEnabled) return
+        reminderJob = scope.launch {
+            while (isActive) {
+                ReminderEngine.checkAll(this@MainActivity, prefs, all, TimetableStore.load(this@MainActivity))
+                delay(60_000L)
+            }
         }
     }
 
@@ -288,6 +311,7 @@ class MainActivity : AppCompatActivity() {
                     toast("抓取失败：$firstError")
                 }
                 render()
+                ReminderEngine.checkAll(this@MainActivity, prefs, all, TimetableStore.load(this@MainActivity))
                 if (showSuccessToast) {
                     if (firstError.isEmpty()) {
                         toast("刷新成功")

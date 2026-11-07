@@ -58,6 +58,9 @@ class SettingsActivity : AppCompatActivity() {
         findViewById<TextView>(R.id.btnTimetableSettings).setOnClickListener {
             startActivity(Intent(this, TimetableSettingsActivity::class.java))
         }
+        findViewById<TextView>(R.id.btnNotificationSettings).setOnClickListener {
+            startActivity(Intent(this, NotificationSettingsActivity::class.java))
+        }
         btnRestore.setOnClickListener { confirmRestore() }
         btnLogout.setOnClickListener { confirmLogoutAll() }
         btnCx.setOnClickListener {
