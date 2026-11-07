@@ -37,6 +37,7 @@ class SettingsActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         prefs = Prefs.get(this)
         setContentView(R.layout.activity_settings)
+        PageTransition.enter(this)
 
         tvCxStatus = findViewById(R.id.tvCxStatus)
         tvYtStatus = findViewById(R.id.tvYtStatus)
@@ -51,7 +52,7 @@ class SettingsActivity : AppCompatActivity() {
         btnLogout = findViewById(R.id.btnLogout)
         btnUpdate = findViewById(R.id.btnUpdate)
 
-        findViewById<TextView>(R.id.btnBack).setOnClickListener { finish() }
+        BottomNav.bind(this, PageNav.ME)
         findViewById<TextView>(R.id.tvVersion).text = "xxtT v" + versionName() + " · 仅本机使用"
         findViewById<TextView>(R.id.btnLog).setOnClickListener { showLog() }
         findViewById<TextView>(R.id.btnTimetableSettings).setOnClickListener {
@@ -72,6 +73,12 @@ class SettingsActivity : AppCompatActivity() {
         btnOrange.setOnClickListener { editOrangeDays() }
 
         bindState()
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        PageTransition.enter(this)
     }
 
     override fun onResume() {
@@ -246,4 +253,9 @@ class SettingsActivity : AppCompatActivity() {
     companion object {
         private const val REQ_LOGIN = 2001
     }
+    @Deprecated("Deprecated in Java")
+    override fun onBackPressed() {
+        PageNav.go(this, PageNav.HOMEWORK)
+    }
+
 }

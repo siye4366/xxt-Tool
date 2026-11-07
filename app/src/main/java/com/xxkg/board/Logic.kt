@@ -142,19 +142,13 @@ object TimeFmt {
     }
 
     /**
-     * 顶部大字号倒计时：X天X时；不足 24 小时只显示 X时；不足 1 小时显示「小于1时」。
+     * 顶部大字号倒计时：与列表里的小剩余时间保持同一套文案。
+     * 例：2天3时 / 5时0分 / 20分 / 已过期。
      */
     fun bigCountdown(now: Long, end: Long): String {
         if (end <= 0L) return "--"
-        val d = end - now
-        if (d <= 0L) return "已过期"
-        val days = d / DAY
-        val hours = (d % DAY) / HOUR
-        return when {
-            days > 0 -> "${days}天${hours}时"
-            hours >= 1 -> "${hours}时"
-            else -> "小于1时"
-        }
+        val r = remain(now, end)
+        return if (r.level == 4) r.text else r.text.removePrefix("剩 ")
     }
 
     /** 距某时刻过了多少天（不足一天返回 0） */

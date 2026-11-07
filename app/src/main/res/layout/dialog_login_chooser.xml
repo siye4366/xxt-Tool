@@ -28,7 +28,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
-        android:text="登录成功后会自动返回课表"
+        android:text="登录成功后会自动返回"
         android:textColor="@color/tt_muted"
         android:textSize="11sp" />
 

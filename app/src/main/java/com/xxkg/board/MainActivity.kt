@@ -47,6 +47,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         prefs = Prefs.get(this)
         setContentView(R.layout.activity_main)
+        PageTransition.enter(this)
 
         tvNearestTitle = findViewById(R.id.tvNearestTitle)
         tvNearestMeta = findViewById(R.id.tvNearestMeta)
@@ -102,30 +103,27 @@ class MainActivity : AppCompatActivity() {
 
         swipe.setOnRefreshListener { refresh() }
 
-        findViewById<TextView>(R.id.btnHome).setOnClickListener {
+        BottomNav.bind(this, PageNav.HOMEWORK) {
             tab = 0
             list.scrollToPosition(0)
             render()
-        }
-        findViewById<TextView>(R.id.btnTimetable).setOnClickListener {
-            startActivity(Intent(this, TimetableActivity::class.java))
-        }
-        findViewById<TextView>(R.id.btnMe).setOnClickListener {
-            startActivity(Intent(this, SettingsActivity::class.java))
         }
 
         all = loadCached()
         render()
 
-        if (!prefs.anyLoggedIn) {
-            if (all.isEmpty() && !prefs.loggedOut) {
-                startActivityForResult(Intent(this, LoginActivity::class.java), REQ_LOGIN)
-            } else if (all.isNotEmpty()) {
-                toast("登录已失效，先显示上次缓存")
-            }
-        } else {
+        if (prefs.anyLoggedIn) {
             refresh()
+        } else if (all.isNotEmpty()) {
+            // 不自动弹登录页：只使用课表的用户可以一直不登录
+            toast("登录已失效，先显示上次缓存")
         }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        PageTransition.enter(this)
     }
 
     override fun onResume() {
@@ -190,7 +188,7 @@ class MainActivity : AppCompatActivity() {
             tvNearestTitle.text = first.title
             val r = TimeFmt.remain(now, first.endTime, prefs.greenDays, prefs.orangeDays)
             tvCountdown.text = if (first.endTime > 0) {
-                TimeFmt.bigCountdown(now, first.endTime)
+                r.text.removePrefix("剩 ")
             } else {
                 "无截止"
             }

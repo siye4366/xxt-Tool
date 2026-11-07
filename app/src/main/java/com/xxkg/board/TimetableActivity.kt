@@ -38,6 +38,7 @@ class TimetableActivity : AppCompatActivity() {
         prefs = Prefs.get(this)
         data = TimetableStore.load(this)
         setContentView(R.layout.activity_timetable)
+        PageTransition.enter(this)
 
         window.statusBarColor = Palette.BG
         window.navigationBarColor = Palette.BG
@@ -82,20 +83,16 @@ class TimetableActivity : AppCompatActivity() {
         grid.onWeekSwipe = { delta -> changeWeek(delta) }
         tvUnplaced.setOnClickListener { showUnplaced() }
 
-        findViewById<LinearLayout>(R.id.navHome).setOnClickListener {
-            startActivity(
-                Intent(this, MainActivity::class.java)
-                    .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
-            )
-            finish()
-        }
-        findViewById<LinearLayout>(R.id.navTimetable).setOnClickListener { }
-        findViewById<LinearLayout>(R.id.navMe).setOnClickListener {
-            startActivity(Intent(this, SettingsActivity::class.java))
-        }
+        BottomNav.bind(this, PageNav.TIMETABLE) { scrollToCurrent() }
 
         render()
         scroll.post { scrollToCurrent() }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        PageTransition.enter(this)
     }
 
     override fun onResume() {
@@ -130,6 +127,11 @@ class TimetableActivity : AppCompatActivity() {
     private fun clearPending() {
         pendingCell = null
         if (::grid.isInitialized) grid.clearPendingCell()
+    }
+
+    @Deprecated("Deprecated in Java")
+    override fun onBackPressed() {
+        PageNav.go(this, PageNav.HOMEWORK)
     }
 
     override fun onDestroy() {

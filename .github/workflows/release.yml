@@ -16,10 +16,14 @@ jobs:
 
       - name: Create GitHub Release
         env:
-          # 使用仓库 Secret GH_PAT（经典的 repo scope PAT），Release 作者会显示为 PAT 所有者。
-          # 不再使用 github.token，否则作者固定是 github-actions[bot]。
-          GH_TOKEN: ${{ secrets.GH_PAT }}
+          # OWNER_PAT 必须是仓库所有者自己的 PAT，Release 作者才会显示为所有者。
+          # 未配置时退回 github.token，作者显示为 github-actions[bot]，不会再用协作人的 PAT。
+          GH_TOKEN: ${{ secrets.OWNER_PAT || github.token }}
         run: |
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            echo "Release $GITHUB_REF_NAME already exists, skip."
+            exit 0
+          fi
           gh release create "$GITHUB_REF_NAME" \
             "dist/xxtT-${GITHUB_REF_NAME}.apk" \
             --title "$GITHUB_REF_NAME" \

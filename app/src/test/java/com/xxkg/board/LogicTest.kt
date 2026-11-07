@@ -172,9 +172,9 @@ class LogicTest {
     @Test
     fun `顶部大时间格式`() {
         assertEquals("2天3时", TimeFmt.bigCountdown(now, now + 2 * day + 3 * 3_600_000L))
-        assertEquals("5时", TimeFmt.bigCountdown(now, now + 5 * 3_600_000L))
-        assertEquals("小于1时", TimeFmt.bigCountdown(now, now + 20 * 60_000L))
-        assertEquals("已过期", TimeFmt.bigCountdown(now, now - day))
+        assertEquals("5时0分", TimeFmt.bigCountdown(now, now + 5 * 3_600_000L))
+        assertEquals("20分", TimeFmt.bigCountdown(now, now + 20 * 60_000L))
+        assertEquals("已过期 1 天", TimeFmt.bigCountdown(now, now - day))
     }
 
     @Test
