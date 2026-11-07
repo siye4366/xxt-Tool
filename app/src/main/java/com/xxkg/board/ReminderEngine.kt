@@ -18,6 +18,60 @@ object ReminderEngine {
         updatePersistent(context, prefs, tasks, data, now)
     }
 
+    /** 下一次需要检查提醒的时刻（毫秒）；没有则返回 null。 */
+    fun nextTrigger(prefs: Prefs, tasks: List<Task>, data: TimetableData, now: Long): Long? {
+        if (!prefs.notifyEnabled) return null
+        var best = Long.MAX_VALUE
+        val known = prefs.notifiedKeys()
+        val deleted = prefs.deletedKeys()
+        for (t in tasks) {
+            if (t.manual && t.expiryAction == ManualExpiry.DELETE) continue
+            if (t.key in deleted) continue
+            if (t.status != TaskStatus.TODO || t.endTime <= 0L || t.endTime <= now) continue
+            for (h in offsets(prefs)) {
+                val trigger = t.endTime - h * TimeFmt.HOUR
+                val key = "hw|${t.key}|$h"
+                if (trigger > now && key !in known && trigger < best) best = trigger
+            }
+        }
+
+        val week = TimetableLogic.weekNumber(data.term, now)
+        if (week in 1..data.term.totalWeeks.coerceAtLeast(1)) {
+            val day = TimetableLogic.dayOfWeek(now)
+            val nowMin = TimetableLogic.nowMinutes()
+            val offset = prefs.courseMinutes.coerceAtLeast(1)
+            val today = data.segments
+                .filter { !it.hidden && it.weeks.contains(week) && it.day == day }
+                .sortedWith(compareBy({ it.startPeriod }, { it.endPeriod }))
+            var lastEnd = -1
+            for (s in today) {
+                val p = data.periods.firstOrNull { it.no == s.startPeriod } ?: continue
+                val endP = data.periods.firstOrNull { it.no == s.endPeriod } ?: p
+                val start = TimetableLogic.minutesOfDay(p.start)
+                val end = TimetableLogic.minutesOfDay(endP.end)
+                if (start < 0 || end < start) continue
+                val gap = if (lastEnd in 0 until start) start - lastEnd else Int.MAX_VALUE
+                val trigger = if (!prefs.ignoreBreak && lastEnd in 0 until start && gap <= offset) {
+                    lastEnd
+                } else {
+                    start - offset
+                }
+                lastEnd = maxOf(lastEnd, end)
+                val key = "course|${s.id}|$week|$day|${s.startPeriod}"
+                if (key in known) continue
+                val nowDateTime = now
+                val triggerMs = nowDateTime - nowMin * 60_000L + trigger * 60_000L
+                if (triggerMs > now && triggerMs < best) {
+                    best = triggerMs
+                } else if (nowMin in trigger..start) {
+                    // 已经进入提醒窗口但还没发：尽快检查
+                    if (now + 1000L < best) best = now + 1000L
+                }
+            }
+        }
+        return if (best == Long.MAX_VALUE) null else best
+    }
+
     fun offsets(prefs: Prefs): List<Int> =
         prefs.homeworkOffsets.split(',')
             .mapNotNull { it.trim().toIntOrNull() }

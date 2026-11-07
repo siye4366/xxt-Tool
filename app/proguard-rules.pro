@@ -9,6 +9,7 @@
 -dontwarn okhttp3.**
 -dontwarn okio.**
 -dontwarn org.jsoup.**
+-dontwarn org.bouncycastle.**
 
 # PDFBox 的可选 JPEG2000 解码器依赖，未打包但不影响普通 PDF
 -dontwarn com.gemalto.jp2.**

@@ -39,14 +39,15 @@ versionCode = MAJOR * 10000 + MINOR * 100 + PATCH
 | 2.7.2 | 20702 |
 | 2.8.0 | 20800 |
 | 2.8.1 | 20801 |
+| 3.1.0 | 30100 |
 | 3.0.0 | 30000 |
 
 MINOR/PATCH 取值 0–99；超过 99 时进位到上一位。
 
 ## 版本名与调试包
 
-- 正式版本名：`2.7.2`。
-- debug 包自动追加后缀：`2.7.2-debug`（`build.gradle.kts` 的 `versionNameSuffix`）。
+- 正式版本名：`3.1.0`。
+- debug 包自动追加后缀：`3.1.0-debug`（`build.gradle.kts` 的 `versionNameSuffix`）。
 - 应用显示名固定为 `xxtT`；「个人」页底部显示 `xxtT v版本号`。
 
 ## 命名规范
@@ -60,48 +61,3 @@ MINOR/PATCH 取值 0–99；超过 99 时进位到上一位。
 | Release 附件 | 与安装包同名 | `xxtT-v2.2.2.apk` |
 
 发布时 tag、Release 标题、APK 文件名三者的版本号必须一致；Release 标题不要再加应用名或中文说明。
-
-## 签名与备份
-
-- 正式包用 `keystore.properties` 指向的 release keystore 签名；当前是 `signing/xxkg-release.jks`，alias `xxkg`。
-- `signing/*.jks`、`keystore.properties` 已在 `.gitignore` 中，不会进仓库；**不要把这两个文件发给别人或提交**。
-- 请把 `signing/xxkg-release.jks` 和 `keystore.properties` 备份到密码管理器/加密 U 盘/可信云盘。密码在 `keystore.properties` 里。
-- 丢失 keystore 或密码后，未来版本无法覆盖安装，只能换新 key 再让用户卸载重装一次。
-
-## Release 发布凭据
-
-- `.github/workflows/release.yml` 使用仓库 Secret `GH_PAT` 创建 Release；**PAT 所有者就是 Release 作者**。
-- PAT 需要能读写本仓库（经典 PAT 勾 `repo` 即可，建议 90 天过期）；只放在仓库 `Settings → Secrets and variables → Actions`，名称 `GH_PAT`，不要写进代码。
-- 当前账号需要仓库 Secrets 管理权限；没有权限时由仓库管理员添加，或改用 PAT 手动创建 Release。
-- PAT 过期/撤销后，自动发布失败；及时更新 Secret。
-
-## 交付流程
-
-1. 修改 `app/build.gradle.kts` 的 `versionCode` / `versionName`。
-2. 在 `CHANGELOG.md` 和 `RELEASE_NOTES.md` 增加对应版本内容。
-3. 编译并跑单元测试：
-   ```powershell
-   powershell -ExecutionPolicy Bypass -File .\scripts\build.ps1 :app:assembleDebug
-   powershell -ExecutionPolicy Bypass -File .\scripts\build.ps1 :app:testDebugUnitTest
-   ```
-4. 打正式包并算摘要：
-   ```powershell
-   powershell -ExecutionPolicy Bypass -File .\scripts\release.ps1
-   ```
-   生成 `dist/xxtT-v3.0.0.apk` 和 SHA-256。
-5. 打 Git tag：`v3.0.0`；GitHub Release 由 workflow 自动创建，**标题固定为 `v版本号`（即 tag 名）**，说明复用 `RELEASE_NOTES.md`。
-6. 必须始终用同一把 keystore 签后续版本，否则无法覆盖安装；安装包文件名统一为 `xxtT-v版本号.apk`。
-
-## 当前版本
-
-- **3.0.0**（versionCode 30000）：新增消息提醒（作业多时间提醒、课程课前提醒、忽略课间、前台/WorkManager 后台检查、可选常驻通知）。
-- **2.8.1**（versionCode 20801）：新增未完成列表底部手动添加作业/考试；修复下拉刷新第二次不显示图标；刷新成功提示；课表时间线常显并置顶；当天课程强调色；手动任务移入已完成超过保留天数后删除。
-- **2.8.0**（versionCode 20800）：底部导航改为作业/课表/个人并固定底栏，仅内容滑动切换；顶部倒计时与列表统一；未登录启动不再自动弹登录；修复下拉刷新灰边。
-- 2.7.2（20702）课程块优先教室、登录页新样式；2.7.1（20701）更新镜像与文字换行；2.7.0（20700）PDF 导入。
-- 2.7.1（20701）：课程块文字按可用高度自动换行；检查更新/下载改为直连+镜像并发与回退；「选择周次」换成课表同款底部弹层。
-- 2.7.0（20700）：文字型 PDF 课表导入（按坐标识别星期列与课程块，支持多页/旋转页面、同一门课多个时间段）；扫描件会给出提示。
-- 2.6.0（20600）课表导入（Excel/CSV/HTML，预览、覆盖/合并）；快速加课可选结束节次并做时间冲突校验；示例数据脱敏。
-- 2.5.1（20501）课程表交互改进（空格子两次点击快速加课、课程块显示名称/地点/教师并放大字号、去掉隐藏、顶部“本周”按钮）；首页/个人页统一新 UI；使用原正式 keystore 签名。
-- 2.4.0（20400）学习通 / 雨课堂双账号同时登录、任务合并并标注来源；2.3.0（20300）新增雨课堂数据源；2.2.2（20202）修复应用内更新安装失败；2.2.1（20201）统一命名；2.2.0（20200）修正页内按钮；2.1.0（20100）加入应用内检查更新；2.0.0（20000）是签名迁移版本。
-- 下一版：3.0.1（PATCH，修 Bug）或 3.1.0（MINOR，新功能）。
-

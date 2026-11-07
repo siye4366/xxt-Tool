@@ -13,8 +13,8 @@ android {
         applicationId = "com.xxkg.board"
         minSdk = 24
         targetSdk = 34
-        versionCode = 30000
-        versionName = "3.0.0"
+        versionCode = 30100
+        versionName = "3.1.0"
     }
 
     // 签名信息放在仓库外的 keystore.properties（已 gitignore）；
@@ -56,7 +56,7 @@ android {
         jvmTarget = "17"
     }
     buildFeatures {
-        viewBinding = true
+        viewBinding = false
     }
     packaging {
         resources.excludes += setOf(
@@ -78,7 +78,10 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("org.jsoup:jsoup:1.17.2")
-    implementation("com.tom-roush:pdfbox-android:2.0.27.0")
+    implementation("com.tom-roush:pdfbox-android:2.0.27.0") {
+        // 只做文字提取，不需要 PDF 加密/签名用的 BouncyCastle；可大幅减小包体
+        exclude(group = "org.bouncycastle")
+    }
     implementation("androidx.work:work-runtime-ktx:2.9.0")
 
     testImplementation("junit:junit:4.13.2")

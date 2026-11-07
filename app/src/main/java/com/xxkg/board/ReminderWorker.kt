@@ -43,6 +43,7 @@ class ReminderWorker(context: Context, params: WorkerParameters) :
         val merged = ManualTasks.merge(prefs, tasks, doneDays = prefs.yDays)
         val data = TimetableStore.load(applicationContext)
         ReminderEngine.checkAll(applicationContext, prefs, merged, data)
+        ReminderAlarmScheduler.schedule(applicationContext)
         return Result.success()
     }
 }
@@ -57,6 +58,7 @@ object ReminderScheduler {
         if (!prefs.notifyEnabled) {
             wm.cancelUniqueWork(WORK)
             ReminderNotifications.cancelPersistent(context)
+            ReminderAlarmScheduler.cancel(context)
             return
         }
         ReminderNotifications.ensureChannels(context)
@@ -68,5 +70,6 @@ object ReminderScheduler {
             )
             .build()
         wm.enqueueUniquePeriodicWork(WORK, ExistingPeriodicWorkPolicy.KEEP, request)
+        ReminderAlarmScheduler.schedule(context)
     }
 }

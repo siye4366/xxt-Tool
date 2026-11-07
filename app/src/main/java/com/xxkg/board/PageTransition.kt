@@ -30,8 +30,16 @@ object PageTransition {
         if (w <= 0 || h <= 0) return
         snapshot?.recycle()
         snapshot = try {
-            Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888).also { bmp ->
-                root.draw(Canvas(bmp))
+            // 半分辨率快照：写内存/上传纹理更小，切换更跟手
+            val scale = 0.5f
+            Bitmap.createBitmap(
+                (w * scale).toInt().coerceAtLeast(1),
+                (h * scale).toInt().coerceAtLeast(1),
+                Bitmap.Config.ARGB_8888
+            ).also { bmp ->
+                val canvas = Canvas(bmp)
+                canvas.scale(scale, scale)
+                root.draw(canvas)
             }
         } catch (e: Exception) {
             null
@@ -65,7 +73,7 @@ object PageTransition {
             v.translationX = offset
             v.animate()
                 .translationX(0f)
-                .setDuration(240L)
+                .setDuration(200L)
                 .setInterpolator(DecelerateInterpolator())
                 .start()
         }
@@ -88,7 +96,7 @@ object PageTransition {
             content.addView(overlay, lp)
             overlay.animate()
                 .translationX(if (dir > 0) -width else width)
-                .setDuration(240L)
+                .setDuration(200L)
                 .setInterpolator(DecelerateInterpolator())
                 .withEndAction {
                     content.removeView(overlay)

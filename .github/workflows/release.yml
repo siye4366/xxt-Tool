@@ -16,10 +16,14 @@ jobs:
 
       - name: Create GitHub Release
         env:
-          # OWNER_PAT 必须是仓库所有者自己的 PAT，Release 作者才会显示为所有者。
-          # 未配置时退回 github.token，作者显示为 github-actions[bot]，不会再用协作人的 PAT。
-          GH_TOKEN: ${{ secrets.OWNER_PAT || github.token }}
+          OWNER_PAT: ${{ secrets.OWNER_PAT }}
         run: |
+          # 只有配置了所有者 PAT 才自动发布，避免 Release 作者变成 github-actions[bot]
+          if [ -z "$OWNER_PAT" ]; then
+            echo "OWNER_PAT not configured; skip auto release."
+            exit 0
+          fi
+          export GH_TOKEN="$OWNER_PAT"
           if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
             echo "Release $GITHUB_REF_NAME already exists, skip."
             exit 0

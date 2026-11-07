@@ -205,17 +205,6 @@ object ReminderNotifications {
         return true
     }
 
-    private fun alertSmall(
-        context: Context,
-        label: String,
-        core: String,
-        coreColor: Int,
-    ): RemoteViews = RemoteViews(context.packageName, R.layout.notification_alert_small).apply {
-        setTextViewText(R.id.tvSmallLabel, label)
-        setTextViewText(R.id.tvSmallCore, core)
-        setTextColor(R.id.tvSmallCore, coreColor)
-    }
-
     private fun alertViews(
         context: Context,
         label: String,

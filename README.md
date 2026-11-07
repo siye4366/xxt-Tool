@@ -1,16 +1,16 @@
 # xxtT · xxt-Tool
 
-一个轻量的 Android 小工具：登录**学习通**或**雨课堂**后，把作业和考试汇总到四个栏目里，按剩余时间排好，省得每次翻五六个入口；2.5.0 起再加一个本地课程表。
+一个轻量的 Android 小工具：登录**学习通**或**雨课堂**后，把作业和考试汇总到四个栏目里，按剩余时间排好；同时提供本地课程表、作业/上课提醒和常驻通知。
 
 > 中文名（仅 GitHub 展示用）：学习通小工具
 
-- 体积约 1–2 MB（release），无后台常驻、无推送、无广告
-- 权限只有网络和安装更新（`REQUEST_INSTALL_PACKAGES`）
+- 体积约 3 MB（release），无广告；可选本地提醒，不依赖服务器推送
+- 权限：网络、安装更新、通知、精确闹钟/开机广播（用于后台提醒）
 - 支持 Android 7.0（API 24）及以上
 - 纯本地运行，登录态只存在本机（Android Keystore 加密）
 - 安装包命名统一为 `xxtT-v版本号.apk`；GitHub Release 标题统一为 `v版本号`
 
-当前版本：**3.0.0**（versionCode 30000），版本规则见 [VERSIONING.md](VERSIONING.md)。
+当前版本：**3.1.0**（versionCode 30100），版本规则见 [VERSIONING.md](VERSIONING.md)。
 
 ## 功能
 
@@ -69,7 +69,7 @@
 - **MINOR**：新增用户可见功能，清零 PATCH；
 - **PATCH**：只修 Bug/文案/样式。
 
-`versionCode = MAJOR × 10000 + MINOR × 100 + PATCH`；当前 3.0.0 = 30000。每次交付至少 +1 PATCH。完整规则和发布流程见 [VERSIONING.md](VERSIONING.md)，每个版本的改动见 [CHANGELOG.md](CHANGELOG.md)。
+`versionCode = MAJOR × 10000 + MINOR × 100 + PATCH`；当前 3.1.0 = 30100。每次交付至少 +1 PATCH。完整规则和发布流程见 [VERSIONING.md](VERSIONING.md)，每个版本的改动见 [CHANGELOG.md](CHANGELOG.md)。
 
 ## 原理
 
@@ -117,10 +117,10 @@
 
 两种方式：
 
-1. **正式 3.0.0 包**：**[`dist/xxtT-v3.0.0.apk`](dist/xxtT-v3.0.0.apk)**（release 签名，与 2.1.x–3.0.0 同一把 key）。可直接覆盖 2.8.1 安装，登录/缓存保留。
-2. **开发调试包**：本地运行 `scripts/build.ps1` 生成 `app/build/outputs/apk/debug/app-debug.apk`（版本名 `3.0.0-debug`，debug 签名）。debug 与正式包签名不同，**不能覆盖正式包**；测试请用模拟器或先卸载。
+1. **正式 3.1.0 包**：**[`dist/xxtT-v3.1.0.apk`](dist/xxtT-v3.1.0.apk)**（正式包）。可直接覆盖 2.8.1 安装，登录/缓存保留。
+2. **开发调试包**：本地运行 `scripts/build.ps1` 生成 `app/build/outputs/apk/debug/app-debug.apk`（版本名 `3.1.0-debug`，debug 签名）。debug 与正式包签名不同，**不能覆盖正式包**；测试请用模拟器或先卸载。
 
-> 安装包命名规范：`xxtT-v版本号.apk`（例如 `xxtT-v3.0.0.apk`）。正式发布包用 `scripts/release.ps1` 生成；`keystore.properties` 与 `signing/*.jks` 不入库。
+> 安装包命名规范：`xxtT-v版本号.apk`（例如 `xxtT-v3.1.0.apk`）。正式发布包用 `scripts/release.ps1` 生成。
 
 传到手机安装（需允许「安装未知来源应用」）。
 
@@ -138,23 +138,12 @@ powershell -ExecutionPolicy Bypass -File .\scripts\setup_env.ps1
 powershell -ExecutionPolicy Bypass -File .\scripts\build.ps1
 powershell -ExecutionPolicy Bypass -File .\scripts\build.ps1 :app:assembleRelease
 
-# 3. 打正式发布包（签名、复制到 dist/、算 SHA-256）
+# 3. 打正式发布包（复制到 dist/、算 SHA-256）
 powershell -ExecutionPolicy Bypass -File .\scripts\release.ps1
 
 # 4. 跑单元测试
 powershell -ExecutionPolicy Bypass -File .\scripts\build.ps1 :app:testDebugUnitTest
 ```
-
-正式包签名：把 `keystore.properties` 放在项目根目录（已 gitignore），内容：
-
-```properties
-storeFile=/path/to/your.jks
-storePassword=******
-keyAlias=your_alias
-keyPassword=******
-```
-
-没有这个文件时 release 包不签名，但仍可编译。
 
 ## 目录结构
 
