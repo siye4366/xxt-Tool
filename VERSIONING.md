@@ -39,6 +39,7 @@ versionCode = MAJOR * 10000 + MINOR * 100 + PATCH
 | 2.7.2 | 20702 |
 | 2.8.0 | 20800 |
 | 2.8.1 | 20801 |
+| 3.1.1 | 30101 |
 | 3.1.0 | 30100 |
 | 3.0.0 | 30000 |
 
@@ -46,8 +47,8 @@ MINOR/PATCH 取值 0–99；超过 99 时进位到上一位。
 
 ## 版本名与调试包
 
-- 正式版本名：`3.1.0`。
-- debug 包自动追加后缀：`3.1.0-debug`（`build.gradle.kts` 的 `versionNameSuffix`）。
+- 正式版本名：`3.1.1`。
+- debug 包自动追加后缀：`3.1.1-debug`（`build.gradle.kts` 的 `versionNameSuffix`）。
 - 应用显示名固定为 `xxtT`；「个人」页底部显示 `xxtT v版本号`。
 
 ## 命名规范

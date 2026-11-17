@@ -154,46 +154,6 @@
                     android:textSize="11sp" />
             </LinearLayout>
 
-            <!-- 设置 -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:background="@drawable/bg_card"
-                android:orientation="vertical"
-                android:padding="12dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="设置"
-                    android:textColor="@color/tt_muted"
-                    android:textSize="11sp" />
-
-                <TextView
-                    android:id="@+id/btnNotificationSettings"
-                    android:layout_width="match_parent"
-                    android:layout_height="40dp"
-                    android:gravity="center_vertical"
-                    android:text="消息设置"
-                    android:textColor="@color/tt_ink"
-                    android:textSize="13sp" />
-
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:background="@color/tt_line" />
-
-                <TextView
-                    android:id="@+id/btnTimetableSettings"
-                    android:layout_width="match_parent"
-                    android:layout_height="40dp"
-                    android:gravity="center_vertical"
-                    android:text="课表设置"
-                    android:textColor="@color/tt_ink"
-                    android:textSize="13sp" />
-            </LinearLayout>
-
             <!-- 时间窗口 -->
             <LinearLayout
                 android:layout_width="match_parent"
@@ -358,6 +318,46 @@
                     android:text="说明：剩余时间 ≥ 绿色节点显示绿色，≥ 橙色节点显示橙色，低于橙色节点显示红色；默认 5/1，即不足 24 小时为红色。"
                     android:textColor="@color/tt_muted2"
                     android:textSize="11sp" />
+            </LinearLayout>
+
+            <!-- 设置 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/bg_card"
+                android:orientation="vertical"
+                android:padding="12dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="设置"
+                    android:textColor="@color/tt_muted"
+                    android:textSize="11sp" />
+
+                <TextView
+                    android:id="@+id/btnNotificationSettings"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:gravity="center_vertical"
+                    android:text="消息设置"
+                    android:textColor="@color/tt_ink"
+                    android:textSize="13sp" />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="@color/tt_line" />
+
+                <TextView
+                    android:id="@+id/btnTimetableSettings"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:gravity="center_vertical"
+                    android:text="课表设置"
+                    android:textColor="@color/tt_ink"
+                    android:textSize="13sp" />
             </LinearLayout>
 
             <!-- 其他 -->

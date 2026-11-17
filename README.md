@@ -10,7 +10,7 @@
 - 纯本地运行，登录态只存在本机（Android Keystore 加密）
 - 安装包命名统一为 `xxtT-v版本号.apk`；GitHub Release 标题统一为 `v版本号`
 
-当前版本：**3.1.0**（versionCode 30100），版本规则见 [VERSIONING.md](VERSIONING.md)。
+当前版本：**3.1.1**（versionCode 30101），版本规则见 [VERSIONING.md](VERSIONING.md)。
 
 ## 功能
 
@@ -69,7 +69,7 @@
 - **MINOR**：新增用户可见功能，清零 PATCH；
 - **PATCH**：只修 Bug/文案/样式。
 
-`versionCode = MAJOR × 10000 + MINOR × 100 + PATCH`；当前 3.1.0 = 30100。每次交付至少 +1 PATCH。完整规则和发布流程见 [VERSIONING.md](VERSIONING.md)，每个版本的改动见 [CHANGELOG.md](CHANGELOG.md)。
+`versionCode = MAJOR × 10000 + MINOR × 100 + PATCH`；当前 3.1.1 = 30101。每次交付至少 +1 PATCH。完整规则和发布流程见 [VERSIONING.md](VERSIONING.md)，每个版本的改动见 [CHANGELOG.md](CHANGELOG.md)。
 
 ## 原理
 
@@ -117,10 +117,10 @@
 
 两种方式：
 
-1. **正式 3.1.0 包**：**[`dist/xxtT-v3.1.0.apk`](dist/xxtT-v3.1.0.apk)**（正式包）。可直接覆盖 2.8.1 安装，登录/缓存保留。
-2. **开发调试包**：本地运行 `scripts/build.ps1` 生成 `app/build/outputs/apk/debug/app-debug.apk`（版本名 `3.1.0-debug`，debug 签名）。debug 与正式包签名不同，**不能覆盖正式包**；测试请用模拟器或先卸载。
+1. **正式 3.1.1 包**：**[`dist/xxtT-v3.1.1.apk`](dist/xxtT-v3.1.1.apk)**（正式包）。可直接覆盖 2.8.1 安装，登录/缓存保留。
+2. **开发调试包**：本地运行 `scripts/build.ps1` 生成 `app/build/outputs/apk/debug/app-debug.apk`（版本名 `3.1.1-debug`，debug 签名）。debug 与正式包签名不同，**不能覆盖正式包**；测试请用模拟器或先卸载。
 
-> 安装包命名规范：`xxtT-v版本号.apk`（例如 `xxtT-v3.1.0.apk`）。正式发布包用 `scripts/release.ps1` 生成。
+> 安装包命名规范：`xxtT-v版本号.apk`（例如 `xxtT-v3.1.1.apk`）。正式发布包用 `scripts/release.ps1` 生成。
 
 传到手机安装（需允许「安装未知来源应用」）。
 
